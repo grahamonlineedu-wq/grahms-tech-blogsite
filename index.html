@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GRAHMS TECH | Modern Gadgets, Cars & Emerging IT</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header Section -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">GRAHMS<span>TECH</span></a>
+      <nav class="nav-links">
+        <a href="#" class="active" onclick="filterCategory('All')">All News</a>
+        <a href="#" onclick="filterCategory('Gadgets')">Gadgets</a>
+        <a href="#" onclick="filterCategory('AutoTech')">AutoTech</a>
+        <a href="#" onclick="filterCategory('Information Tech')">IT & Cloud</a>
+        <a href="#" onclick="filterCategory('AI & Hardware')">AI & Hardware</a>
+      </nav>
+      <a href="/admin.html" class="cms-btn">Publish Article</a>
+    </div>
+  </header>
+
+  <!-- Hero Headline Section -->
+  <section class="hero-banner">
+    <div class="hero-content">
+      <span class="badge">Trending Insight</span>
+      <h1>Next-Gen Consumer Tech, Automotive Innovation & IT Horizons</h1>
+      <p>In-depth coverage on breakthrough hardware, electric transport, enterprise software, and mobile engineering.</p>
+    </div>
+  </section>
+
+  <!-- Main Content Area -->
+  <main class="main-container">
+    <div class="category-bar">
+      <h2>Latest Intelligence</h2>
+      <div class="filter-pills">
+  <button class="pill active" onclick="filterCategory('All')">All</button>
+  <button class="pill" onclick="filterCategory('Gadgets')">Gadgets</button>
+  <button class="pill" onclick="filterCategory('AutoTech')">AutoTech</button>
+  <button class="pill" onclick="filterCategory('Information Tech')">Information Tech</button>
+    </div>
+    </div>
+
+    <div id="posts-grid" class="posts-grid">
+      <!-- Dynamic posts populated via JavaScript -->
+    </div>
+  </main>
+
+  <script src="post.js"></script>
+</body>
+</html>
+
+

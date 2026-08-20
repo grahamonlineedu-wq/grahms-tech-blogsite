@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMS Dashboard | DEV.LOGS</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --border: #374151;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --danger: #ef4444;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; padding: 1.5rem; }
+    
+    .container { max-width: 900px; margin: 0 auto; display: none; }
+    .auth-gate { max-width: 400px; margin: 5rem auto; background: var(--surface); padding: 2rem; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+    h1 { font-size: 1.8rem; color: var(--accent); }
+    a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+    a:hover { color: var(--accent); }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+    .card h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+
+    .form-group { margin-bottom: 1rem; text-align: left; }
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+    input, select, textarea { width: 100%; padding: 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.95rem; font-family: inherit; }
+    textarea { height: 120px; resize: vertical; }
+
+    button { background: var(--accent); color: #000; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
+    button:hover { background: var(--accent-hover); }
+
+    .post-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 1rem 0; }
+    .btn-delete { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; border: 1px solid var(--danger); cursor: pointer; width: auto; }
+  </style>
+</head>
+<body>
+
+  <!-- Passcode Access Gate -->
+  <div class="auth-gate" id="authGate">
+    <h2 style="margin-bottom: 1rem; color: var(--accent);">Admin Authorization</h2>
+    <div class="form-group">
+      <input type="password" id="passkey" placeholder="Enter Publisher Security Key">
+    </div>
+    <button onclick="unlockDashboard()">Unlock CMS</button>
+  </div>
+
+  <!-- Dashboard Container -->
+  <div class="container" id="dashboard">
+    <header>
+      <h1>Publisher CMS</h1>
+      <a href="/">&larr; Back to Website</a>
+    </header>
+
+    <div class="card">
+      <h2>Publish New Article</h2>
+      <form id="postForm" onsubmit="createArticle(event)">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" id="title" required placeholder="e.g., Understanding System Design">
+        </div>
+        <div class="form-group">
+          <label for="category">Category</label>
+          <input type="text" id="category" required placeholder="e.g., System Design, Node.js">
+        </div>
+        <div class="form-group">
+          <label for="excerpt">Short Excerpt</label>
+          <input type="text" id="excerpt" required placeholder="Brief summary...">
+        </div>
+        <div class="form-group">
+          <label for="content">Full Article Content</label>
+          <textarea id="content" required placeholder="Write your full article content here..."></textarea>
+        </div>
+        <button type="submit">Publish Article</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Manage Published Articles</h2>
+      <div id="articlesList">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    // Simple key gate check
+    function unlockDashboard() {
+      const key = document.getElementById('passkey').value;
+      if (key === 'admin123') { // Replace 'admin123' with your preferred key
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        fetchArticles();
+      } else {
+        alert('Invalid Access Passkey');
+      }
+    }
+
+    async function fetchArticles() {
+      const res = await fetch('/api/posts');
+      const posts = await res.json();
+      const list = document.getElementById('articlesList');
+
+      if (!posts.length) {
+        list.innerHTML = '<p style="color:var(--text-muted)">No articles published yet.</p>';
+        return;
+      }
+
+      list.innerHTML = posts.map(p => `
+        <div class="post-item">
+          <div>
+            <h3>${p.title}</h3>
+            <span style="font-size:0.8rem; color:var(--text-muted)">Category: ${p.category}</span>
+          </div>
+          <button class="btn-delete" onclick="deleteArticle(${p.id})">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    async function createArticle(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const category = document.getElementById('category').value;
+      const excerpt = document.getElementById('excerpt').value;
+      const content = document.getElementById('content').value;
+
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, category, excerpt, content })
+      });
+
+      if (res.ok) {
+        document.getElementById('postForm').reset();
+        fetchArticles();
+      } else {
+        alert('Failed to publish article.');
+      }
+    }
+
+    async function deleteArticle(id) {
+      if (!confirm('Delete this article?')) return;
+      const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchArticles();
+    }
+  </script>
+</body>
+</html>

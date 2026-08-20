@@ -1,0 +1,16 @@
+{
+  "name": "grahms-tech-blogsite",
+  "version": "1.0.0",
+  "description": "High-performance tech blog platform powered by Node.js, Express, and Supabase",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2"
+  }
+}
