@@ -6,25 +6,29 @@ let allPosts = [];
 
 async function fetchPosts() {
   const postsGrid = document.getElementById("posts-grid");
-  
+
   try {
     const response = await fetch("/api/posts");
     if (!response.ok) throw new Error("Network response failed");
-    
+
     allPosts = await response.json();
     renderPosts(allPosts);
   } catch (error) {
     console.error("Error fetching articles:", error);
-    postsGrid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 3rem 0;">
-        <p>Unable to load stories. Ensure server is running.</p>
-      </div>
-    `;
+    if (postsGrid) {
+      postsGrid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); padding: 3rem 0;">
+          <p>Unable to load stories. Ensure server is running.</p>
+        </div>
+      `;
+    }
   }
 }
 
 function renderPosts(posts) {
   const postsGrid = document.getElementById("posts-grid");
+  if (!postsGrid) return;
+
   postsGrid.innerHTML = "";
 
   if (posts.length === 0) {
@@ -48,11 +52,18 @@ function renderPosts(posts) {
         })
       : "Recently";
 
+    const coverImg =
+      post.image_url ||
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80";
+
     card.innerHTML = `
+      <div style="width:100%; height:160px; overflow:hidden; border-radius:8px; margin-bottom:0.85rem;">
+        <img src="${coverImg}" alt="${post.title}" style="width:100%; height:100%; object-fit:cover;" />
+      </div>
       <span class="cat-tag">${post.category || "General"}</span>
       <h3>${post.title}</h3>
-      <p>${post.excerpt || (post.content ? post.content.substring(0, 100) + "..." : "")}</p>
-      <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+      <p>${post.excerpt || (post.content ? post.content.substring(0, 90) + "..." : "")}</p>
+      <div style="margin-top:0.75rem; font-size:0.8rem; color:var(--text-secondary);">
         Published ${dateFormatted}
       </div>
     `;
@@ -62,7 +73,6 @@ function renderPosts(posts) {
 }
 
 function filterCategory(category) {
-  // 1. Synchronize Pill UI active states
   const pills = document.querySelectorAll(".filter-pills .pill");
   pills.forEach((pill) => {
     if (pill.textContent.trim().toLowerCase() === category.toLowerCase()) {
@@ -72,7 +82,6 @@ function filterCategory(category) {
     }
   });
 
-  // 2. Synchronize Header Links active states
   const navLinks = document.querySelectorAll(".nav-links a");
   navLinks.forEach((link) => {
     const linkText = link.textContent.trim().toLowerCase();
@@ -86,7 +95,6 @@ function filterCategory(category) {
     }
   });
 
-  // 3. Filter and render database posts
   if (category === "All") {
     renderPosts(allPosts);
   } else {
@@ -98,4 +106,3 @@ function filterCategory(category) {
     renderPosts(filtered);
   }
 }
-
