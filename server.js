@@ -10,13 +10,22 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Initialize Supabase Client
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+
+function requireSupabase(req, res, next) {
+  if (!supabase) {
+    return res.status(503).json({
+      error: 'Supabase is not configured. Add SUPABASE_URL and SUPABASE_KEY to your environment variables.'
+    });
+  }
+
+  next();
+}
 
 // GET all posts
-app.get('/api/posts', async (req, res) => {
+app.get('/api/posts', requireSupabase, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('posts')
@@ -32,12 +41,13 @@ app.get('/api/posts', async (req, res) => {
 });
 
 // POST new article
-app.post('/api/posts', async (req, res) => {
+app.post('/api/posts', requireSupabase, async (req, res) => {
   try {
-    const { title, category, excerpt, content } = req.body;
+    const { title, category, excerpt, content, image_url } = req.body;
+
     const { data, error } = await supabase
       .from('posts')
-      .insert([{ title, category, excerpt, content }])
+      .insert([{ title, category, excerpt, content, image_url }])
       .select();
 
     if (error) throw error;
@@ -49,7 +59,7 @@ app.post('/api/posts', async (req, res) => {
 });
 
 // DELETE article
-app.delete('/api/posts/:id', async (req, res) => {
+app.delete('/api/posts/:id', requireSupabase, async (req, res) => {
   try {
     const { error } = await supabase
       .from('posts')
@@ -65,8 +75,17 @@ app.delete('/api/posts/:id', async (req, res) => {
 });
 
 app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Route not found' });
+  }
+
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Supabase-backed platform running at http://localhost:${PORT}`));
+
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`🚀 Supabase-backed platform running at http://localhost:${PORT}`));
+}
+
+module.exports = app;
